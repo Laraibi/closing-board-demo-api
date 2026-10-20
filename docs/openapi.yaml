@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: API LMS de démonstration
+  version: 1.0.0
+  description: Quiz, tentatives, feedback et administration. Données fictives. Le rôle passe par l'en-tête x-role.
+servers:
+  - url: http://localhost:3000
+components:
+  parameters:
+    Role: { name: x-role, in: header, schema: { type: string, enum: [learner, trainer, admin] } }
+    User: { name: x-user, in: header, schema: { type: string } }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: VALIDATION_ERROR }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+    Quiz:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        module: { type: string }
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              text: { type: string }
+              choices: { type: array, items: { type: string } }
+paths:
+  /api/health:
+    get: { summary: Santé, responses: { "200": { description: OK } } }
+  /api/quizzes:
+    get:
+      summary: Liste des quiz (sans bonnes réponses pour un apprenant)
+      parameters: [{ $ref: "#/components/parameters/Role" }]
+      responses: { "200": { description: Liste } }
+    post:
+      summary: Créer un quiz (formateur)
+      parameters: [{ $ref: "#/components/parameters/Role" }]
+      responses:
+        "201": { description: Créé }
+        "400": { description: Invalide, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "403": { description: Refusé }
+  /api/attempts:
+    post:
+      summary: Soumettre une tentative (3 au plus)
+      parameters: [{ $ref: "#/components/parameters/User" }]
+      responses: { "201": { description: Notée }, "400": { description: Limite atteinte ou invalide } }
+  /api/feedback:
+    post:
+      summary: Feedback formateur sur une tentative
+      responses: { "201": { description: Créé }, "404": { description: Tentative introuvable } }
