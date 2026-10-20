@@ -10,9 +10,12 @@
     "test": "node --test test/",
     "seed": "node scripts/seed.js"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5"
   },
   "license": "MIT"
 }

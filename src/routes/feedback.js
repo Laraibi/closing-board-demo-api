@@ -1,28 +1,28 @@
 import { Router } from "express";
+import { Attempt, Feedback, Quiz, User } from "../models/index.js";
 import { forbidden, invalid, notFound } from "../lib/errors.js";
-import { newId } from "../lib/store.js";
-import { requireRole } from "../lib/auth.js";
+import { canReachModule, requireRole } from "../lib/auth.js";
 import { sendMail } from "../lib/mailer.js";
 
-export function feedbackRoutes(store) {
+export function feedbackRoutes() {
   const router = Router();
 
-  router.post("/", requireRole("trainer", "admin"), (req, res, next) => {
-    const attempt = store.attempts.find((item) => item.id === req.body?.attemptId);
+  // Un formateur ne commente que les tentatives de ses modules.
+  router.post("/", requireRole("trainer", "admin"), async (req, res, next) => {
+    const attempt = await Attempt.findById(req.body?.attemptId).lean().catch(() => null);
     if (!attempt) return next(notFound("Tentative"));
+    const quiz = await Quiz.findById(attempt.quiz).lean();
+    if (!canReachModule(req.user, quiz.module)) return next(forbidden());
     const text = String(req.body?.text || "").trim();
     if (text.length < 5) return next(invalid([{ field: "text", message: "5 caractères minimum." }]));
-    const entry = { id: newId("fb"), attemptId: attempt.id, userId: attempt.userId, text, at: new Date().toISOString() };
-    store.feedback.push(entry);
-    const user = store.users.find((item) => item.id === attempt.userId);
-    if (user) sendMail(store, { to: user.email, template: "feedbackPosted", data: { name: user.name } });
+    const entry = await Feedback.create({ attempt: attempt._id, user: attempt.user, author: req.user._id, text });
+    const learner = await User.findById(attempt.user).lean();
+    if (learner) await sendMail({ to: learner.email, template: "feedbackPosted", data: { name: learner.name } });
     res.status(201).json({ feedback: entry });
   });
 
-  // Un apprenant ne lit que ses propres feedbacks.
-  router.get("/user/:userId", (req, res, next) => {
-    if (req.role === "learner" && req.userId !== req.params.userId) return next(forbidden());
-    res.json({ feedback: store.feedback.filter((item) => item.userId === req.params.userId) });
+  router.get("/me", async (req, res) => {
+    res.json({ feedback: await Feedback.find({ user: req.user._id }).sort({ createdAt: -1 }).lean() });
   });
 
   return router;
