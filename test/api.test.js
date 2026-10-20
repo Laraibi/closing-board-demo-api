@@ -110,3 +110,14 @@ describe("feedback et administration", () => {
     assert.equal((await call("/api/nope", { as: "ada" })).data.error.code, "ROUTE_NOT_FOUND");
   });
 });
+
+describe("préférences du formateur", () => {
+  test("heure et modules validés, apprenant refusé", async () => {
+    assert.equal((await call("/api/me/preferences", { as: "ada" })).status, 403);
+    assert.equal((await call("/api/me/preferences", { as: "formatrice", method: "PATCH", body: { hour: 30 } })).status, 400);
+    assert.equal((await call("/api/me/preferences", { as: "formatrice", method: "PATCH", body: { modules: ["devops"] } })).status, 400);
+    const ok = await call("/api/me/preferences", { as: "formatrice", method: "PATCH", body: { hour: 7, modules: ["backend"] } });
+    assert.equal(ok.data.digest.hour, 7);
+    assert.deepEqual(ok.data.digest.modules, ["backend"]);
+  });
+});
