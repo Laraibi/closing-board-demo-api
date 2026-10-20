@@ -25,6 +25,7 @@ Avec Docker (API + MongoDB) : `docker compose up --build`, puis `docker compose 
 | GET | `/api/attempts/me` | connecté | mes tentatives seulement |
 | GET | `/api/attempts/progression` | connecté | meilleur score par quiz, moyenne |
 | POST | `/api/feedback` | formateur | feedback sur une tentative, e-mail |
+| GET/PATCH | `/api/me/preferences` | formateur | heure et modules du résumé quotidien |
 | GET/PATCH | `/api/admin/settings` | admin | e-mails, cron du résumé quotidien |
 | POST | `/api/admin/jobs/digest` | admin | lancer le résumé à la main |
 | GET | `/api/admin/stats` | admin | statistiques pour un tableau de bord React |
@@ -42,5 +43,4 @@ Toutes les erreurs ont la même forme : `{ "error": { "code", "message", "detail
 
 ## À faire
 
-- Préférences du résumé par formateur.
 - Envoi SMTP réel.
