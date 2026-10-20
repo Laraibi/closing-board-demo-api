@@ -6,7 +6,13 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   role: { type: String, enum: ["learner", "trainer", "admin"], default: "learner" },
   // Modules suivis (apprenant) ou enseignés (formateur).
-  modules: { type: [String], default: [] }
+  modules: { type: [String], default: [] },
+  // Préférences du résumé quotidien (formateur) : heure et modules suivis.
+  digest: {
+    enabled: { type: Boolean, default: true },
+    hour: { type: Number, min: 0, max: 23, default: 18 },
+    modules: { type: [String], default: [] }
+  }
 }, { timestamps: true });
 
 const questionSchema = new mongoose.Schema({

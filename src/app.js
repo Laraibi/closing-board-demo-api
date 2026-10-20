@@ -6,6 +6,7 @@ import { quizRoutes } from "./routes/quizzes.js";
 import { attemptRoutes } from "./routes/attempts.js";
 import { feedbackRoutes } from "./routes/feedback.js";
 import { adminRoutes } from "./routes/admin.js";
+import { preferenceRoutes } from "./routes/preferences.js";
 
 export function createApp() {
   const app = express();
@@ -17,6 +18,7 @@ export function createApp() {
   app.use("/api/attempts", attemptRoutes());
   app.use("/api/feedback", feedbackRoutes());
   app.use("/api/admin", adminRoutes());
+  app.use("/api/me/preferences", preferenceRoutes());
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
